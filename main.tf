@@ -24,6 +24,11 @@ terraform {
 locals {
     vcn_id              = try(var.create_vcn ? module.oci-network.vcn_id : data.oci_core_vcns.existing_vcns.virtual_networks[0].id)
     vcn_cidr            = try(var.create_vcn ? module.oci-network.vcn_cidr : data.oci_core_vcns.existing_vcns.virtual_networks[0].cidr_blocks[0])
+    domain_record = [for rec in var.domain_record :
+                    merge(rec, { "ip_address" : module.oci-app-instance.public-ip-address })
+                    ]
+    exist_dns_zone_id = var.create_dns ? data.oci_dns_zones.existing_dns_zone.zones[0].id : ""
+    exist_dns_zone_name = var.create_dns ? data.oci_dns_zones.existing_dns_zone.zones[0].name : ""
 }
 
 data "oci_core_vcns" "existing_vcns" {
@@ -32,8 +37,14 @@ data "oci_core_vcns" "existing_vcns" {
     state            = var.vcn_state
 }
 
+data "oci_dns_zones" "existing_dns_zone" {
+  compartment_id = module.oci-identity-managment.compartm_id
+  name           = var.exist_dns_zone_name
+}
+
 module "oci-identity-managment" {
-    source = "git@github.com:Randsw/oci-terraform-identity-managment.git"
+    #source = "git@github.com:Randsw/oci-terraform-identity-managment.git"
+    source = "../modules/oci-identity-managment"
 
     tenancy_id = data.sops_file.secret.data["tenancy"]
     compartment_name = "OpenVPN"
@@ -62,21 +73,23 @@ module "oci-security" {
 }
 
 module "oci-app-instance" {
-    source = "git@github.com:Randsw/oci-terraform-instance.git"
-
-    subnet_id           = module.oci-network.subnet_id
-    ssh_key_public      = var.ssh_key_public
-    ssh_key_private     = var.ssh_key_private
-    region              = var.region
-    image_id            = var.image_id
-    compartment_id      = module.oci-identity-managment.compartm_id
-    instance_name       = var.instance_name
-    vnic_name           = var.vnic_name
-    assign_public_ip    = var.assign_public_ip
-    hostname_label      = var.hostname_label
-    ssh_user            = var.ssh_user
-    remote_exec_command = var.remote_exec_command
-    app_tags            = var.app_tags
+    #source = "git@github.com:Randsw/oci-terraform-instance.git"
+    source = "../modules/oci-app-instance"
+    subnet_id                 = module.oci-network.subnet_id
+    ssh_key_public            = var.ssh_key_public
+    ssh_key_private           = var.ssh_key_private
+    region                    = var.region
+    image_id                  = var.image_id
+    compartment_id            = module.oci-identity-managment.compartm_id
+    instance_name             = var.instance_name
+    vnic_name                 = var.vnic_name
+    assign_public_ip          = var.assign_public_ip
+    hostname_label            = var.hostname_label
+    ssh_user                  = var.ssh_user
+    remote_exec_command       = var.remote_exec_command
+    app_tags                  = var.app_tags
+    reserve_public_ip         = var.reserve_public_ip
+    reserved_public_ip_name = var.reserved_public_ip_name
 }
 
 module "oci-network" {
@@ -97,8 +110,14 @@ module "oci-network" {
     dns_zone_name                = var.dns_zone_name
     dns_zone_type                = var.dns_zone_type
     create_vcn                   = var.create_vcn
+    create_dns_zone              = var.create_dns_zone
+    create_dns_record            = var.create_dns_record
     exist_vcn_id                 = try(var.create_vcn ? "" : data.oci_core_vcns.existing_vcns.virtual_networks[0].id)
     exist_vcn_dhcp_options_id    = try(var.create_vcn ? "" : data.oci_core_vcns.existing_vcns.virtual_networks[0].default_dhcp_options_id)
+    exist_dns_zone_id            = local.exist_dns_zone_id
+    exist_dns_zone_name          = local.exist_dns_zone_id 
+    domain_record                = local.domain_record
+
 }
 
 resource "null_resource" "ansible_provision" {

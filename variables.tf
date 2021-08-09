@@ -154,3 +154,40 @@ variable "vcn_state" {
     type = string  
     default = "Available"
 }
+
+variable "create_dns" {
+  type = bool
+}
+
+variable "create_dns_zone" {
+  type = bool
+}
+
+variable "create_dns_record" {
+    type = bool  
+}
+
+variable "exist_dns_zone_state" {
+  type    = string
+  default = "Available"
+}
+
+variable "domain_record" {
+  type = list(map(string))
+}
+
+variable "exist_dns_zone_name" {
+  type    = string
+  default = "rand-app.tk"
+}
+
+variable "reserve_public_ip" {
+    type = bool
+}
+
+
+variable "reserved_public_ip_name" {
+    type = string
+    description = "Display name for reserved public ip resource"
+    default = "OpenVPN"
+}

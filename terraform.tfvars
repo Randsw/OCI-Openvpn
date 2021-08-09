@@ -56,3 +56,13 @@ udp_ingress_rule = [{"protocol": "17", "source": "0.0.0.0/0", "description": "Al
 
 create_vcn = true
 
+
+create_dns = false
+
+create_dns_zone = false
+
+create_dns_record = false
+
+domain_record = [{ "domain_name" : "vpn.rand-app.tk", "dns_record_type" : "A", "ttl" : "3600" }]
+
+reserve_public_ip = false

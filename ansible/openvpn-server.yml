@@ -29,8 +29,9 @@
         - rand-netbook
         - rand-phone
         - rand-work
+        - k8s-cp
+        - k8s-worker
+        - pc-dacha
         - client1
         - client2
         - client3
-        - client4
-        - client5
