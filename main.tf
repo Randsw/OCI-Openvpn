@@ -24,12 +24,14 @@ terraform {
 locals {
     vcn_id              = try(var.create_vcn ? module.oci-network.vcn_id : data.oci_core_vcns.existing_vcns.virtual_networks[0].id)
     vcn_cidr            = try(var.create_vcn ? module.oci-network.vcn_cidr : data.oci_core_vcns.existing_vcns.virtual_networks[0].cidr_blocks[0])
-    domain_record = [for rec in var.domain_record :
-                    merge(rec, { "ip_address" : module.oci-app-instance.public-ip-address })
-                    ]
-    exist_dns_zone_id = var.create_dns ? data.oci_dns_zones.existing_dns_zone.zones[0].id : ""
+    domain_record       = [for rec in var.domain_record :
+                           merge(rec, { "ip_address" : module.oci-app-instance.public-ip-address })
+                          ]
+    exist_dns_zone_id   = var.create_dns ? data.oci_dns_zones.existing_dns_zone.zones[0].id : ""
     exist_dns_zone_name = var.create_dns ? data.oci_dns_zones.existing_dns_zone.zones[0].name : ""
+    cloud-init          = file("cloud-init.yaml")
 }
+
 
 data "oci_core_vcns" "existing_vcns" {
     compartment_id   = module.oci-identity-managment.compartm_id
@@ -43,8 +45,8 @@ data "oci_dns_zones" "existing_dns_zone" {
 }
 
 module "oci-identity-managment" {
-    #source = "git@github.com:Randsw/oci-terraform-identity-managment.git"
-    source = "../modules/oci-identity-managment"
+    source = "git@github.com:Randsw/oci-terraform-identity-managment.git"
+    #source = "../modules/oci-identity-managment"
 
     tenancy_id = data.sops_file.secret.data["tenancy"]
     compartment_name = "OpenVPN"
@@ -73,8 +75,8 @@ module "oci-security" {
 }
 
 module "oci-app-instance" {
-    #source = "git@github.com:Randsw/oci-terraform-instance.git"
-    source = "../modules/oci-app-instance"
+    source = "git@github.com:Randsw/oci-terraform-instance.git"
+    #source = "../modules/oci-app-instance"
     subnet_id                 = module.oci-network.subnet_id
     ssh_key_public            = var.ssh_key_public
     ssh_key_private           = var.ssh_key_private
@@ -89,7 +91,9 @@ module "oci-app-instance" {
     remote_exec_command       = var.remote_exec_command
     app_tags                  = var.app_tags
     reserve_public_ip         = var.reserve_public_ip
-    reserved_public_ip_name = var.reserved_public_ip_name
+    reserved_public_ip_name   = var.reserved_public_ip_name
+    skip_source_dest_check    = var.skip_source_dest_check
+    cloud-init                = local.cloud-init
 }
 
 module "oci-network" {

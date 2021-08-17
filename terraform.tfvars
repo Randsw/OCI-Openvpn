@@ -66,3 +66,5 @@ create_dns_record = false
 domain_record = [{ "domain_name" : "vpn.rand-app.tk", "dns_record_type" : "A", "ttl" : "3600" }]
 
 reserve_public_ip = false
+
+skip_source_dest_check = false
