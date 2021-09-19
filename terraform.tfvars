@@ -48,11 +48,16 @@ dns_zone_type = "PRIMARY"
 
 security_list_name = "OpenVPN security list"
 
-egress_rule = [{"protocol": "6", "destination": "0.0.0.0/0"},]
+egress_rule = [{"protocol": "6", "destination": "0.0.0.0/0"},
+               {"protocol": "17", "destination": "0.0.0.0/0"}]
+
+ingress_rule_all = [{"protocol": "all", "source": "10.9.0.0/24"},
+                    {"protocol": "all", "source": "172.16.1.0/24"}]
 
 tcp_ingress_rule = [{"protocol": "6", "source": "0.0.0.0/0", "description": "Allow ssh", "port": "22"},]
 
-udp_ingress_rule = [{"protocol": "17", "source": "0.0.0.0/0", "description": "Allow openvpn", "port": "1194"},]
+udp_ingress_rule = [{"protocol": "17", "source": "0.0.0.0/0", "description": "Allow openvpn", "port": "1194"}, 
+                    {"protocol": "17", "source": "0.0.0.0/0", "description": "Allow NTP Chrony", "port": "323"}]
 
 create_vcn = true
 

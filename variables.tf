@@ -131,6 +131,11 @@ variable "egress_rule" {
     default = null
 }
 
+variable "ingress_rule_all" {
+    type = list(map(string))
+    default = null
+}
+
 variable "tcp_ingress_rule" {
     type = list(map(string))
     default = null

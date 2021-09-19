@@ -69,6 +69,7 @@ module "oci-security" {
     app_tags           = var.app_tags
     security_list_name = var.security_list_name
     egress_rule        = var.egress_rule
+    ingress_rule_all   = var.ingress_rule_all
     tcp_ingress_rule   = var.tcp_ingress_rule
     udp_ingress_rule   = var.udp_ingress_rule
 }
